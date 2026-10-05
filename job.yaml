@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: model-train-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: model-train
+        image: model-train:default
+        imagePullPolicy: Never
+        envFrom:
+        - configMapRef:
+            name: model-config
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: model-volume
+          mountPath: /data
+      restartPolicy: Never
+      volumes:
+      - name: model-volume
+        persistentVolumeClaim:
+          claimName: model-volume-claim

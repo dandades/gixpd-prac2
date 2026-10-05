@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: model-server
+  template:
+    metadata:
+      labels:
+        app: model-server
+    spec:
+      containers:
+      - name: model-server
+        image: model-server:default
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: model-config
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: model-volume
+          mountPath: /data
+      volumes:
+      - name: model-volume
+        persistentVolumeClaim:
+          claimName: model-volume-claim
